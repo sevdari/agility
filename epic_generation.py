@@ -39,7 +39,7 @@ def generate_epic(user_prompt, project_summary) -> tuple[Epic, str]:
     
     prompt = f"""
         {epic_generation_prompt}
-        Here is the user Prompt:
+        Here is the user prompt:
         {user_prompt}
         Here are the details and current status of the project:
         {project_summary}
