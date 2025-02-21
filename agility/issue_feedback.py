@@ -92,4 +92,4 @@ if __name__ == "__main__":
     updated_issues, proposal_summary = generate_proposals_with_feedback(user_feedback, issues)
     for issue in updated_issues:
         print(issue)
-    print("Proposal Summary:\n", proposal_summary)
+    print("Proposal Summary:\n", proposal_summary) 

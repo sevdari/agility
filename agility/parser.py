@@ -230,4 +230,4 @@ class Parser:
                         "proposed_body": proposed_body
                     })
 
-        return modifications, new_proposals, proposal_summary
+        return modifications, new_proposals, proposal_summary 

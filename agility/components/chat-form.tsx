@@ -71,12 +71,32 @@ export function ChatForm({ className, ...props }: React.ComponentProps<"form">) 
     if (!input.trim()) return
 
     if (isInitialView) {
-      setIsInitialView(false)
-      // Generate epic from first message
-      setEpicContent("New Epic: " + input.split("\n")[0])
+      // Epic generation mode: call the epic generation API.
+      try {
+        const res = await fetch("/api/epic/generate", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ user_prompt: input }),
+        })
+        const data = await res.json()
+        // data contains: { epic: { epic_id, epic_content, ... }, summary }
+        // Save the epic content to state and display the summary in the chat.
+        setEpicContent(data.epic.epic_content)
+        append({ content: data.summary, role: "assistant" })
+        // Now that the epic is generated, we expect the user to click "Accept Epic".
+      } catch (error) {
+        console.error("Error generating epic:", error)
+        append({
+          content: "Error generating epic.",
+          role: "assistant",
+        })
+      }
+    } else {
+      // Normal chat mode: use the default chat API.
+      await append({ content: input, role: "user" })
     }
-
-    await append({ content: input, role: "user" })
     setInput("")
   }
 
@@ -105,22 +125,36 @@ export function ChatForm({ className, ...props }: React.ComponentProps<"form">) 
     }
   }
 
-  const handleAcceptEpic = () => {
-    setIsEpicAccepted(true)
-    setIsIssueView(true)
-    setPreviousMessages(messages)
-    setMessages([])
-    // Generate issues based on the epic
-    setIssues([
-      { id: "1", title: "Implement user authentication", description: "Create a secure login system for users." },
-      { id: "2", title: "Design responsive UI", description: "Ensure the application is mobile-friendly." },
-      {
-        id: "3",
-        title: "Integrate with backend API",
-        description: "Connect frontend components with backend services.",
-      },
-    ])
-  }
+  const handleAcceptEpic = async () => {
+    if (!epicContent) return;
+
+    // Set state to indicate that the epic has been accepted.
+    setIsEpicAccepted(true);
+    setIsIssueView(true);
+    setPreviousMessages(messages);
+    setMessages([]); // Optionally clear previous messages for the issues view
+
+    try {
+      const res = await fetch("/api/issue/generate", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        // Pass the generated epic content as the prompt for issue generation.
+        body: JSON.stringify({ user_prompt: epicContent }),
+      });
+      const issueData = await res.json();
+      // issueData contains: { issues: [...], summary }.
+      setIssues(issueData.issues);
+      append({ content: issueData.summary, role: "assistant" });
+    } catch (error) {
+      console.error("Error generating issues:", error);
+      append({
+        content: "Error generating issues.",
+        role: "assistant",
+      });
+    }
+  };
 
   const handleModifyEpic = () => {
     // Logic for modifying the epic
@@ -162,12 +196,12 @@ export function ChatForm({ className, ...props }: React.ComponentProps<"form">) 
           key={index}
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className={cn("flex", message.role === "user" ? "justify-end" : "justify-start")}
+          className={cn("flex", message.role === 'user' ? "justify-end" : "justify-start")}
         >
           <div
             className={cn(
               "max-w-[80%] rounded-lg px-4 py-2 text-base",
-              message.role === "user" ? "bg-primary text-primary-foreground" : "bg-muted",
+              message.role === 'user' ? "bg-primary text-primary-foreground" : "bg-muted",
             )}
           >
             {message.content}
@@ -388,6 +422,22 @@ export function ChatForm({ className, ...props }: React.ComponentProps<"form">) 
               </Button>
             </div>
           </motion.div>
+        )}
+
+        {!isEpicAccepted && epicContent && (
+          <div className="epic-review mb-4">
+            <h3 className="mb-2 font-bold">Generated Epic:</h3>
+            <div className="epic-content p-4 border rounded mb-2">
+              <pre className="whitespace-pre-wrap">{epicContent}</pre>
+            </div>
+            <button
+              onClick={handleAcceptEpic}
+              // disabled={/* you might add a loading flag here */}
+              className="bg-primary text-primary-foreground px-4 py-2 rounded"
+            >
+              Accept Epic and Generate Issues
+            </button>
+          </div>
         )}
       </main>
     </div>

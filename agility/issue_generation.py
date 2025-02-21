@@ -29,4 +29,4 @@ if __name__ == "__main__":
     issues, summary = generate_issues(prompt)
     for issue in issues:
         print(issue)
-    print("Summary:", summary)
+    print("Summary:", summary) 

@@ -80,4 +80,4 @@ if __name__ == "__main__":
     )
     epic, summary = generate_epic(user_prompt)
     print("Generated Epic:\n", epic)
-    print("\nSummary:\n", summary)
+    print("\nSummary:\n", summary) 
