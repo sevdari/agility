@@ -1,9 +1,15 @@
+from abc import ABC, abstractmethod
+
 class Epic:
     """
     Represents an epic with its original content and an optional proposed update.
     """
-    def __init__(self, epic_id, epic_content, proposed_content=None):
-        self.epic_id = epic_id
+    # Create a staic next_id variable to increment for each new epic.
+    _next_id = 0
+
+    def __init__(self, epic_content, epic_id=None, proposed_content=None):
+        self.epic_id = epic_id or Epic._next_id
+        Epic._next_id += 1
         self.epic_content = epic_content      # The original epic statement.
         self.proposed_content = proposed_content  # The proposed updated epic, if any.
 
@@ -43,19 +49,19 @@ class Issue:
         return s
 
 
-class Parser:
-    @staticmethod
-    def parse_epic_feedback(raw_output, existing_epic):
+class Parser(ABC):
+    @abstractmethod
+    def parse(self, raw_output, *args, **kwargs):
+        """
+        Abstract method to parse input data.
+        """
+        pass
+
+
+class EpicParser(Parser):
+    def parse(raw_output, epic=None) -> tuple[Epic, str]:
         """
         Parses the LLM output for epic feedback.
-
-        Expected format:
-        
-        Proposed Epic:
-        <updated epic statement>
-
-        Changes Summary:
-        <summary of changes and reasoning>
 
         Args:
             raw_output (str): The raw text output produced by the LLM.
@@ -71,14 +77,14 @@ class Parser:
         mode = None
 
         for line in raw_output.splitlines():
-            if line.startswith("Proposed Epic:"):
+            if line.startswith("Epic:"):
                 mode = "epic"
-                text = line[len("Proposed Epic:"):].strip()
+                text = line[len("Epic:"):].strip()
                 if text:
                     epic_lines.append(text)
-            elif line.startswith("Changes Summary:"):
+            elif line.startswith("Summary:"):
                 mode = "summary"
-                text = line[len("Changes Summary:"):].strip()
+                text = line[len("Summary:"):].strip()
                 if text:
                     summary_lines.append(text)
             elif mode == "epic":
@@ -89,37 +95,19 @@ class Parser:
         proposed_epic_text = "\n".join(epic_lines).strip()
         changes_summary = "\n".join(summary_lines).strip()
 
-        # Create a new Epic object with the updated (proposed) content.
-        updated_epic = Epic(existing_epic.epic_id, existing_epic.epic_content,
-                            proposed_content=proposed_epic_text)
-        return updated_epic, changes_summary
+        # If the existing epic is not provided, create a new Epic object.
+        if epic is None:
+            epic = Epic(epic_content=proposed_epic_text)
+        else:
+            epic.proposed_content = proposed_epic_text
 
-    @staticmethod
-    def parse_issue_feedback(raw_output):
+        return epic, changes_summary
+
+
+class IssueParser(Parser):
+    def parse(raw_output) -> tuple[dict, list, str]:
         """
         Parses the LLM output for issue feedback.
-
-        Expected format (each block separated by a blank line):
-
-        For existing issues:
-        ---------------------
-        Issue <ID>:
-        Action: <Update/Delete>
-        If Action is Update, then include:
-        Proposed Title: <revised title>
-        Proposed Body:
-        <revised description>
-        
-        For new issues:
-        ---------------------
-        New Issue:
-        Action: Add
-        Proposed Title: <title>
-        Proposed Body:
-        <description>
-
-        Proposal Summary:
-        <summary of proposed changes to the issues>
 
         Returns:
             tuple: (modifications, new_proposals, proposal_summary)
