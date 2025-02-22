@@ -181,4 +181,7 @@ if __name__ == "__main__":
     # approval_handler.approve_ticket(issue)
     # print(approval_handler)
     
-    
+    # Test modifying an epic
+    approval_handler.modify_ticket(epic, proposed_content="This is a modified epic")
+    print(approval_handler)
+

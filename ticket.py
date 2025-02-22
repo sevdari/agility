@@ -82,8 +82,8 @@ class Epic(Ticket):
             self.state = "APPROVED"
             self.proposed_content = None
 
-    def modify_proposal(self, epic_content: str):
-        self.current_content = {"epic_content": epic_content}
+    def modify_proposal(self, proposed_content: str) -> None:
+        self.current_content = {"epic_content": proposed_content}
         self.proposed_content = None
         self.state = "APPROVED"
 
