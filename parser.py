@@ -56,7 +56,7 @@ class EpicParser(Parser):
 
         return epic, changes_summary
 
-
+# TODO: Update IssueParser to use Issue Objects and follow the same pattern as EpicParser
 class IssueParser(Parser):
     def parse(raw_output) -> tuple[dict, list, str]:
         """
