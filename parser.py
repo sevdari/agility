@@ -1,53 +1,6 @@
 from abc import ABC, abstractmethod
-
-class Epic:
-    """
-    Represents an epic with its original content and an optional proposed update.
-    """
-    # Create a staic next_id variable to increment for each new epic.
-    _next_id = 0
-
-    def __init__(self, epic_content, epic_id=None, proposed_content=None):
-        self.epic_id = epic_id or Epic._next_id
-        Epic._next_id += 1
-        self.epic_content = epic_content      # The original epic statement.
-        self.proposed_content = proposed_content  # The proposed updated epic, if any.
-
-    def __str__(self):
-        s = f"Epic ID: {self.epic_id}\nEpic Content:\n{self.epic_content}\n"
-        if self.proposed_content:
-            s += f"Proposed Content:\n{self.proposed_content}\n"
-        return s
-
-
-class Issue:
-    """
-    Represents an issue with its current state and an optional proposed update.
-    """
-    def __init__(self, issue_id, issue_title, issue_body,
-                 proposed_issue_title=None, proposed_issue_body=None,
-                 proposed_action=None):
-        self.issue_id = issue_id
-        self.issue_title = issue_title        # The current title.
-        self.issue_body = issue_body          # The current body/description.
-        self.proposed_issue_title = proposed_issue_title  # Proposed updated title.
-        self.proposed_issue_body = proposed_issue_body    # Proposed updated body.
-        self.proposed_action = proposed_action  # Proposed action: "Update", "Delete", or "Add".
-
-    def __str__(self):
-        s = (f"Issue ID: {self.issue_id}\n"
-             f"Title: {self.issue_title}\n"
-             f"Body: {self.issue_body}\n")
-        if self.proposed_action or self.proposed_issue_title or self.proposed_issue_body:
-            s += "Proposed Change:\n"
-            if self.proposed_action:
-                s += f"  Action: {self.proposed_action}\n"
-            if self.proposed_issue_title:
-                s += f"  Title: {self.proposed_issue_title}\n"
-            if self.proposed_issue_body:
-                s += f"  Body: {self.proposed_issue_body}\n"
-        return s
-
+from ticket import Epic, Issue
+from typing import Optional
 
 class Parser(ABC):
     @abstractmethod
@@ -59,13 +12,13 @@ class Parser(ABC):
 
 
 class EpicParser(Parser):
-    def parse(raw_output, epic=None) -> tuple[Epic, str]:
+    def parse(raw_output, epic: Optional[Epic] = None) -> tuple[Epic, str]:
         """
         Parses the LLM output for epic feedback.
 
         Args:
             raw_output (str): The raw text output produced by the LLM.
-            existing_epic (Epic): The original epic object.
+            epic (Optional[Epic]): The original epic object, if available.
 
         Returns:
             tuple: (updated_epic, changes_summary)
@@ -99,7 +52,7 @@ class EpicParser(Parser):
         if epic is None:
             epic = Epic(epic_content=proposed_epic_text)
         else:
-            epic.proposed_content = proposed_epic_text
+            epic.propose_update(proposed_epic_text)
 
         return epic, changes_summary
 

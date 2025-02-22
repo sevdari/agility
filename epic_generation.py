@@ -1,7 +1,7 @@
 import os
 from model import Model
 from parser import EpicParser as parser
-from parser import Epic
+from ticket import Epic
 
 
 epic_generation_agent = Model(

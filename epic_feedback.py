@@ -1,6 +1,6 @@
 from model import Model
 from parser import EpicParser as parser
-from parser import Epic
+from ticket import Epic
 
 
 epic_feedback_agent = Model(
@@ -47,7 +47,7 @@ def generate_epic_feedback(current_epic, user_feedback, project_summary) -> tupl
         {epic_feedback_prompt}
         Here is the current epic:
         \"\"\"
-        {current_epic.epic_content}
+        {current_epic.get_current_content()}
         \"\"\"
         Here is the user feedback:
         \"\"\"
@@ -68,7 +68,7 @@ def generate_epic_feedback(current_epic, user_feedback, project_summary) -> tupl
 
 if __name__ == "__main__":
     # Create an Epic object representing the current epic.
-    current_epic = Epic(epic_id=1, epic_content="Develop a secure multi-factor authentication system for all users.")
+    current_epic = Epic(epic_content="Develop a secure multi-factor authentication system for all users.")
 
     project_summary = (
         "Project mission statement: To provide a secure access solution for users across various platforms.\n"
