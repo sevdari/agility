@@ -7,7 +7,9 @@ from openai import OpenAI
 
 class Model:
     def __init__(self, model_name, system_prompt, temperature=0.7):
+        load_dotenv()
         self.model_name = model_name
+        print(os.getenv("OPENAI_API_KEY"))
         self.client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
         self.system_prompt = system_prompt
         self.temperature = temperature

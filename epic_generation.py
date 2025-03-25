@@ -7,7 +7,7 @@ from ticket import Epic
 
 
 epic_generation_agent = Model(
-    model_name="gpt-4o",
+    model_name="gpt-3.5-turbo",
     system_prompt="You are an experienced project manager working as a scrum master",
     temperature=0.7,
 )

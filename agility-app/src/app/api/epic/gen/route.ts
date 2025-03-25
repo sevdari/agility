@@ -6,7 +6,9 @@ export async function POST(request: Request) {
 
   return new Promise((resolve, reject) => {
     // Debug: Log the arguments you’re passing
-    console.log('Spawning python with args:', user_prompt, project_summary);
+    console.log('Spawning python with args:');
+    console.log('user_prompt:', user_prompt);
+    console.log('project_summary:', project_summary);
 
     const pythonProcess = spawn('python', [
       '/Users/aarjavjain/Desktop/Dev/aienginehackathon/agility/epic_generation.py',
